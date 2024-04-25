@@ -73,6 +73,7 @@ public class PostsServiceImpl implements PostsService{
             }
         }
         createdPost.setMedias(medias);
+        createdPost.setTotalComment(post.getTotalComment()+ 1);
         postsRepository.save(createdPost);
 
         return createdPost;
