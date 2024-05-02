@@ -22,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import javax.print.attribute.standard.Media;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -154,16 +155,24 @@ public class PostsServiceImpl implements PostsService{
         commentsRepository.deleteByPostId(postId.toString());
         favoritesRepository.deleteByPostId(postId.toString());
 
-        List<Medias> media = post.getMedias();
-        for (Medias medias: media) {
-            String publicUrl = medias.getPublicUrl();
+//        xóa media trên minIO
+        List<Medias> medias = post.getMedias();
+        for (Medias media : medias) {
             try {
-                mediaService.deletePost(publicUrl);
+                String objectName = media.getBaseName();
+                mediaService.deletePost(objectName);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
 
+//        xóa media
+        mediaRepository.deleteById(postId.toString());
+//        xóa comments
+        commentsRepository.deleteByPostId(postId.toString());
+//        xóa favorites
+        favoritesRepository.deleteByPostId(postId.toString());
+//        xóa bài posts
         postsRepository.delete(post);
     }
 

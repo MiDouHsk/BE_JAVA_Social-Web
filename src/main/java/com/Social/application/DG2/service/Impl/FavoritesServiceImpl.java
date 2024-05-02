@@ -43,10 +43,10 @@ public class FavoritesServiceImpl implements FavoritesService {
             throw new NotFoundException("Không tìm thấy người dùng!");
         }
 
-//        Optional<Favorites> optionalFavorite = favoritesRepository.findById(posts);
-//        if (optionalFavorite.isEmpty()){
-//            throw new NotFoundException("không tìm thấy bài cần lưu vào mục yêu thích!");
-//        }
+        Optional<Favorites> optionalFavorite = favoritesRepository.findById(posts);
+        if (optionalFavorite.isEmpty()){
+            throw new NotFoundException("không tìm thấy bài cần lưu vào mục yêu thích!");
+        }
 
         Favorites favorites = new Favorites();
         Posts post = postsRepository.findById(posts).orElseThrow(() -> new NotFoundException("Không tìm thấy bài viết!"));
