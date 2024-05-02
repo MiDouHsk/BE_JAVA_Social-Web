@@ -31,9 +31,6 @@ public class Medias {
     @JoinColumn(name = "post_id")
     private Posts postsId;
 
-    public Medias(String id) {
-        this.id = id;
-    }
     public void setPostsId(Posts postId) {
         this.postsId = postId;
     }

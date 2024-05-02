@@ -8,6 +8,7 @@ import com.Social.application.DG2.mapper.PostsMapper;
 import com.Social.application.DG2.repositories.MediaRepository;
 import com.Social.application.DG2.repositories.PostsRepository;
 import com.Social.application.DG2.repositories.UsersRepository;
+import com.Social.application.DG2.service.MediaService;
 import com.Social.application.DG2.service.PostsService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
@@ -38,6 +39,8 @@ public class PostsServiceImpl implements PostsService{
     private  MediaRepository mediaRepository;
     @Autowired
     private PostsMapper postsMapper;
+    @Autowired
+    private MediaService mediaService;
 
     @Override
     public Posts createPosts(PostsDto postDto) {
@@ -73,7 +76,6 @@ public class PostsServiceImpl implements PostsService{
             }
         }
         createdPost.setMedias(medias);
-        createdPost.setTotalComment(post.getTotalComment()+ 1);
         postsRepository.save(createdPost);
 
         return createdPost;
@@ -121,6 +123,10 @@ public class PostsServiceImpl implements PostsService{
         postsRepository.save(post);
     }
 
+    private String addNewLines(String input) {
+        return input.replace("\n", "<br/>");
+    }
+
     @Override
     public void deletePost(UUID postId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -137,12 +143,23 @@ public class PostsServiceImpl implements PostsService{
         }
 
         Posts post = optionalPost.get();
-        if (!post.getUserId().equals(currentUser)) {
+        if (!post.getUserId().getId().equals(currentUser.getId())) {
             throw new AccessDeniedException("Bạn không có quyền Xóa bài đăng này");
         }
 
-        postsRepository.deleteById(post.toString());
+        List<Medias> media = post.getMedias();
+        for (Medias medias: media) {
+            String publicUrl = medias.getPublicUrl();
+            try {
+                mediaService.deletePost(publicUrl);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        postsRepository.deleteById(postId.toString());
     }
+
 
     @Override
     public Page<Posts> getPostsByUserId(Pageable pageable, UUID userId) {

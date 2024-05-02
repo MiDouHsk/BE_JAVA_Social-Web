@@ -60,6 +60,7 @@ public class CommentsServiceImpl implements CommentsService {
         comments.setPostId(post.get());
         comments.setCreateAt(new Timestamp(System.currentTimeMillis()));
         postsRepository.save(posts);
+
         return commentsRepository.save(comments);
     }
 
@@ -92,7 +93,9 @@ public class CommentsServiceImpl implements CommentsService {
         Posts posts = comment.getPostId();
         posts.setTotalComment(posts.getTotalComment() - 1);
 
+
         postsRepository.save(posts);
+
         commentsRepository.deleteById(commentId.toString());
     }
 

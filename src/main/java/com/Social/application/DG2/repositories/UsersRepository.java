@@ -25,4 +25,7 @@ public interface UsersRepository extends JpaRepository<Users, String> {
 
     @Query("SELECT u FROM Users u JOIN u.followingUser f WHERE f.id = :userId ORDER BY u.username ASC")
     Page<Users> findFollowerUsersByUserId(@Param("userId") String userId, Pageable pageable);
+
+    @Query("SELECT u FROM Users u WHERE u.id NOT IN (SELECT f.id FROM Users u JOIN u.followingUser f WHERE u.id = ?1)")
+    Page<Users> findUnfollowerUsersByUserId(String userId, Pageable pageable);
 }

@@ -126,7 +126,7 @@ public class PostsController {
     public ResponseEntity<String> uploadPostVideo(@RequestParam("filePath") MultipartFile file) {
         try {
             String mediaId = postService.uploadMedia(file);
-            return ResponseEntity.ok("Media ID: " +mediaId);
+            return ResponseEntity.ok(mediaId);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading file: " + e.getMessage());

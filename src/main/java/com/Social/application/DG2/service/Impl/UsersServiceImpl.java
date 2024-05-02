@@ -65,9 +65,10 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public UserDetails login(String username, String password) {
-        UserDetails userDetails = loadUserByUsername(username);
+        String normalizedUsername = username.toLowerCase();
+        UserDetails userDetails = loadUserByUsername(normalizedUsername);
         if(!encoder.matches(password,userDetails.getPassword())) {
-            throw new BadCredentialsException("Invalid username or password");
+            throw new BadCredentialsException("sai tài khoản hoặc mật khẩu.");
         }
         return userDetails;
     }

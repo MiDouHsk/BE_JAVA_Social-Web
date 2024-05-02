@@ -92,6 +92,32 @@ public class FollowController {
         return ResponseEntity.ok(followerUsers.getContent());
     }
 
+    @CheckLogin
+    @GetMapping("/ListUsers/notFollowing")
+    public ResponseEntity<List<UsersInfoDto>> getNotFollowingUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue =  "createAt") String sortName,
+            @RequestParam(defaultValue = "DESC") String sortType) {
+
+        // Tạo một biến Sort.Direction để lưu hướng sắp xếp
+        Sort.Direction direction;
+
+        // Kiểm tra giá trị của sortType
+        if (sortType.equalsIgnoreCase("ASC")) {
+            direction = Sort.Direction.ASC;
+        } else {
+            direction = Sort.Direction.DESC;
+        }
+
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(direction, sortName));
+
+        Page<UsersInfoDto> notFollowingUsers =
+                followService.getNotFollowingListUsers(pageable);
+        return ResponseEntity.ok(notFollowingUsers.getContent());
+    }
+
+
     @DeleteMapping("/user/unfollow/{followingUserId}")
     public ResponseEntity<String> unfollowUser(@PathVariable String followingUserId) {
         followService.unfollowUser(followingUserId);

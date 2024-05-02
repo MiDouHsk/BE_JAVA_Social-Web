@@ -66,7 +66,7 @@ public class UsersController {
 
                 return  ResponseEntity.ok(responseData);
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("sai tài khoản hoặc mật khẩu.");
         }
     }
 

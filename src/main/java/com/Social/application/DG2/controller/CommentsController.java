@@ -3,6 +3,7 @@ package com.Social.application.DG2.controller;
 import com.Social.application.DG2.dto.CommentsDto;
 import com.Social.application.DG2.entity.Comments;
 import com.Social.application.DG2.service.CommentsService;
+import com.Social.application.DG2.util.annotation.CheckLogin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,6 +31,7 @@ public class CommentsController {
         return commentsService.saveComment(comment);
     }
 
+    @CheckLogin
     @GetMapping("/post/{postId}")
     public ResponseEntity<Page<Comments>> getCommentsByPostId(@PathVariable String postId,
                                                               @RequestParam(defaultValue = "0") int page,
@@ -51,7 +53,7 @@ public class CommentsController {
         return ResponseEntity.ok(commentsPage);
     }
 
-
+    @CheckLogin
     @PutMapping("/update")
     public void update(@RequestParam String id, @RequestParam String content) {
         CommentsDto comment = new CommentsDto();
@@ -59,7 +61,7 @@ public class CommentsController {
         comment.setContent(content);
         commentsService.updateComments(comment);
     }
-
+    @CheckLogin
     @DeleteMapping("/delete/{commentId}")
     public void deleteComment(@PathVariable UUID commentId) {
         commentsService.deleteComment(commentId);

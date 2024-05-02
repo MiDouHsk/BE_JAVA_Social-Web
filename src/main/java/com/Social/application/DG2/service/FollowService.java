@@ -14,4 +14,5 @@ public interface FollowService {
 
     Page<UsersInfoDto> getFollowingListUsers(Pageable pageable);
     Page<UsersInfoDto> getFollowerListUsers(Pageable pageable);
+    Page<UsersInfoDto> getNotFollowingListUsers(Pageable pageable);
 }

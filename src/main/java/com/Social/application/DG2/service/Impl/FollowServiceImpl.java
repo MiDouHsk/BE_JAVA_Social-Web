@@ -8,6 +8,7 @@ import com.Social.application.DG2.util.exception.InvalidRequestException;
 import com.Social.application.DG2.util.exception.MethodNotAllowedException;
 import com.Social.application.DG2.util.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class FollowServiceImpl implements FollowService {
@@ -114,8 +116,27 @@ public class FollowServiceImpl implements FollowService {
         return users.map(this::usersInfoDto);
     }
 
+    @Override
+    public Page<UsersInfoDto> getNotFollowingListUsers(Pageable pageable) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+
+        Users currentUser = usersRepository.findByUsername(currentUsername);
+        String currentUserId = currentUser.getId();
+        Page<Users> users = usersRepository.findUnfollowerUsersByUserId(currentUserId, pageable);
+
+        List<Users> filteredUsers = users.getContent().stream()
+                .filter(user -> !user.getId().equals(currentUserId))
+                .collect(Collectors.toList());
+
+        Page<Users> filteredPage = new PageImpl<>(filteredUsers, pageable, users.getTotalElements());
+
+        return filteredPage.map(this::usersInfoDto);
+    }
+
     private UsersInfoDto usersInfoDto(Users users) {
         UsersInfoDto dto = new UsersInfoDto();
+        dto.setId(users.getId());
         dto.setUsername(users.getUsername());
         dto.setFirstName(users.getFirstName());
         dto.setLastName(users.getLastName());
@@ -123,6 +144,7 @@ public class FollowServiceImpl implements FollowService {
         dto.setGender(users.isGender());
         dto.setPhoneNumber(users.getPhoneNumber());
         dto.setDateOfBirth(users.getDateOfBirth());
+        dto.setAddress(users.getAddress());
         dto.setMail(users.getMail());
         return dto;
     }
