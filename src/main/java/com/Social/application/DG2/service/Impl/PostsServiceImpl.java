@@ -9,6 +9,7 @@ import com.Social.application.DG2.repositories.MediaRepository;
 import com.Social.application.DG2.repositories.PostsRepository;
 import com.Social.application.DG2.repositories.UsersRepository;
 import com.Social.application.DG2.service.MediaService;
+import com.Social.application.DG2.repositories.*;
 import com.Social.application.DG2.service.PostsService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
@@ -41,6 +42,10 @@ public class PostsServiceImpl implements PostsService{
     private PostsMapper postsMapper;
     @Autowired
     private MediaService mediaService;
+    @Autowired
+    private CommentsRepository commentsRepository;
+    @Autowired
+    private FavoritesRepository favoritesRepository;
 
     @Override
     public Posts createPosts(PostsDto postDto) {
@@ -138,7 +143,7 @@ public class PostsServiceImpl implements PostsService{
         }
 
         Optional<Posts> optionalPost = postsRepository.findById(postId.toString());
-        if (!optionalPost.isPresent()) {
+        if (optionalPost.isEmpty()) {
             throw new EntityNotFoundException("Không tìm thấy bài đăng có ID: " + postId);
         }
 
@@ -146,6 +151,8 @@ public class PostsServiceImpl implements PostsService{
         if (!post.getUserId().getId().equals(currentUser.getId())) {
             throw new AccessDeniedException("Bạn không có quyền Xóa bài đăng này");
         }
+        commentsRepository.deleteByPostId(postId.toString());
+        favoritesRepository.deleteByPostId(postId.toString());
 
         List<Medias> media = post.getMedias();
         for (Medias medias: media) {
@@ -158,6 +165,7 @@ public class PostsServiceImpl implements PostsService{
         }
 
         postsRepository.deleteById(postId.toString());
+        postsRepository.delete(post);
     }
 
 

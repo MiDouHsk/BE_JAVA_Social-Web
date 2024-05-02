@@ -20,6 +20,6 @@ public interface PostsRepository extends JpaRepository<Posts, String> {
     @Transactional
     @Modifying
     @Query("DELETE FROM Posts p WHERE p.id = :postId")
-    void deleteById(String postId);
+    void deleteByuserId(String postId);
     int countByUserId(Users user);
 }

@@ -21,10 +21,4 @@ public class CommentsDto {
 
     private String createBy;
 
-    public void incrementTotalComment(Posts posts) {
-        if (posts != null) {
-            int currentTotalComment = posts.getTotalComment();
-            posts.setTotalComment(currentTotalComment + 1);
-        }
-    }
 }
