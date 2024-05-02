@@ -20,6 +20,18 @@ public interface PostsRepository extends JpaRepository<Posts, String> {
     @Transactional
     @Modifying
     @Query("DELETE FROM Posts p WHERE p.id = :postId")
-    void deleteById(String postId);
+    void deleteByuserId(String postId);
     int countByUserId(Users user);
+
+    @Query("SELECT p FROM Posts p JOIN p.favoritesUser u WHERE u.id = :userId")
+    Page<Posts> findFavoritesByUserId(String userId, Pageable pageable);
+
+
+    @Transactional
+    @Modifying
+    @Query(value = "DELETE FROM favorites f WHERE f.user_id = :userId AND f.post_id = :postId", nativeQuery = true)
+    void deleteFavoriteByUserIdAndPostId(String userId, String postId);
+
+    @Query(value = "SELECT COUNT(*) FROM favorites WHERE user_id = :userId AND post_id = :postId", nativeQuery = true)
+    int countFavoritesByUserIdAndPostId(String userId, String postId);
 }

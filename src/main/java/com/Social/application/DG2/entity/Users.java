@@ -2,6 +2,7 @@ package com.Social.application.DG2.entity;
 
 import com.Social.application.DG2.entity.Enum.EnableType;
 import com.Social.application.DG2.entity.Enum.RoleType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -43,7 +44,6 @@ public class Users {
     private String phoneNumber;
 
     @Column(name = "date_of_birth")
-
     private Timestamp dateOfBirth;
 
     @Column(name = "mail")
@@ -83,6 +83,14 @@ public class Users {
     )
     private List<Users> followingUser = new ArrayList<>();
 
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "favorites",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "post_id")
+    )
+    private List<Posts> favoritesPost;
+
     @PrePersist
     protected void onCreate() {
         createAt = new Timestamp(new Date().getTime());
@@ -90,7 +98,28 @@ public class Users {
 
     @PreUpdate
     protected void onUpdate() {
-        updateAt = new Timestamp(new Date().getTime());
+        updateAt = new Timestamp(System.currentTimeMillis());
+    }
+
+    @Override
+    public String toString() {
+        return "Users{" +
+                "id='" + id + '\'' +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", gender=" + gender +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", dateOfBirth=" + dateOfBirth +
+                ", mail='" + mail + '\'' +
+                ", address='" + address + '\'' +
+                ", avatar='" + avatar + '\'' +
+                ", roleType=" + roleType +
+                ", enableType=" + enableType +
+                ", createAt=" + createAt +
+                ", updateAt=" + updateAt +
+                '}';
     }
 }
 

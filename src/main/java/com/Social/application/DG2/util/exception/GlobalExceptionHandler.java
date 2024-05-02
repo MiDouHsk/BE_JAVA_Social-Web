@@ -23,4 +23,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleMethodNotAllowedException(MethodNotAllowedException ex) {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(ex.getMessage());
     }
+
+    @ExceptionHandler(value = ConflictException.class)
+    public ResponseEntity<Object> handleMethodConflictException(ConflictException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
 }
