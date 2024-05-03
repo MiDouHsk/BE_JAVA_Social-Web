@@ -59,6 +59,7 @@ public class CommentsServiceImpl implements CommentsService {
         comments.setCreateBy(currentUser);
         comments.setPostId(post.get());
         comments.setCreateAt(new Timestamp(System.currentTimeMillis()));
+
         postsRepository.save(posts);
 
         return commentsRepository.save(comments);
@@ -90,6 +91,7 @@ public class CommentsServiceImpl implements CommentsService {
         if (!comment.getCreateBy().getId().equals(currentUser.getId())) {
             throw new UnauthorizedException("Bạn không có quyền xóa bình luận này!");
         }
+
         Posts posts = comment.getPostId();
         posts.setTotalComment(posts.getTotalComment() - 1);
 

@@ -164,7 +164,6 @@ public class PostsServiceImpl implements PostsService{
             }
         }
 
-        postsRepository.deleteById(postId.toString());
         postsRepository.delete(post);
     }
 
