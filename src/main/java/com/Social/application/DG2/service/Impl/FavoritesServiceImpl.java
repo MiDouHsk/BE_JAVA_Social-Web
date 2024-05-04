@@ -1,17 +1,14 @@
 package com.Social.application.DG2.service.Impl;
 
 import com.Social.application.DG2.dto.FavoritesDto;
-import com.Social.application.DG2.entity.Favorites;
 import com.Social.application.DG2.entity.Posts;
 import com.Social.application.DG2.entity.Users;
-import com.Social.application.DG2.repositories.FavoritesRepository;
 import com.Social.application.DG2.repositories.PostsRepository;
 import com.Social.application.DG2.repositories.UsersRepository;
 import com.Social.application.DG2.service.FavoritesService;
 import com.Social.application.DG2.util.exception.ConflictException;
 import com.Social.application.DG2.util.exception.NotFoundException;
 import com.Social.application.DG2.util.exception.UnauthorizedException;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,50 +16,41 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class FavoritesServiceImpl implements FavoritesService {
     @Autowired
     private UsersRepository usersRepository;
     @Autowired
-    private FavoritesRepository favoritesRepository;
-    @Autowired
     private PostsRepository postsRepository;
     @Override
-    public void saveFavorite(String posts) {
+    public void saveFavorite(String postId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             throw new UnauthorizedException("Bạn cần đăng nhập để thực hiện hành động này!");
         }
         String currentUsername = auth.getName();
-        Users users = usersRepository.findByUsername(currentUsername);
-        if (users == null ) {
+        Users user = usersRepository.findByUsername(currentUsername);
+        if (user == null) {
             throw new NotFoundException("Không tìm thấy người dùng!");
         }
 
-        Optional<Favorites> optionalFavorite = favoritesRepository.findById(posts);
-        if (optionalFavorite.isEmpty()){
-            throw new NotFoundException("không tìm thấy bài cần lưu vào mục yêu thích!");
+        Optional<Posts> optionalPost = postsRepository.findById(postId);
+        if (optionalPost.isEmpty()) {
+            throw new NotFoundException("Không tìm thấy bài đăng có ID: " + postId);
         }
 
-        Favorites favorites = new Favorites();
-        Posts post = postsRepository.findById(posts).orElseThrow(() -> new NotFoundException("Không tìm thấy bài viết!"));
+        Posts post = optionalPost.get();
 
-        Optional<Favorites> optionalFavorite2 = favoritesRepository.findByUserIDAndPostsID(users, post);
-        if (optionalFavorite2.isPresent()) {
-            throw new ConflictException("Bài viết đã tồn tại trong mục yêu thích!");
+        boolean isPostFavorited = usersRepository.isPostFavoritedByUser(user.getId(), postId);
+        if (isPostFavorited) {
+            throw new ConflictException("Bài đăng đã được yêu thích trước đó!");
         }
 
-        favorites.setId(post.getId());
-        favorites.setPostsID(post);
-        favorites.setUserID(users);
-        favorites.setCreateAt(new Timestamp(System.currentTimeMillis()));
+        user.getFavoritesPost().add(post);
 
-        favoritesRepository.save(favorites);
-
+        usersRepository.save(user);
     }
 
     @Override
@@ -72,37 +60,48 @@ public class FavoritesServiceImpl implements FavoritesService {
 
         Users currentUser = usersRepository.findByUsername(currentUsername);
         String currentUserId = currentUser.getId();
-        Page<Favorites> favorites = favoritesRepository.findAll(pageable);
-        return favorites.map(this::favoritesDto);
+
+        Page<Posts> favoritePostsPage = postsRepository.findFavoritesByUserId(currentUserId, pageable);
+
+        return favoritePostsPage.map(this::convertToDto);
     }
 
-    private FavoritesDto favoritesDto(Favorites favorites) {
-        FavoritesDto dto = new FavoritesDto();
-        dto.setPostsID(favorites.getPostsID());
-        dto.setUserID(favorites.getUserID());
-        dto.setCreateAt(favorites.getCreateAt());
-        return dto;
+    private FavoritesDto convertToDto(Posts post) {
+        FavoritesDto favoritesDto = new FavoritesDto();
+        favoritesDto.setPostsID(post.getId());
+        favoritesDto.setTitle(post.getTitle());
+        favoritesDto.setBody(post.getBody());
+        favoritesDto.setStatus(post.getStatus());
+        if (post.getMedias() != null && !post.getMedias().isEmpty()) {
+            favoritesDto.setMediasId(Arrays.asList(post.getMedias().get(0).getId()));
+        }
+        favoritesDto.setTotalLike(String.valueOf(post.getTotalLike()));
+        favoritesDto.setTotalComment(String.valueOf(post.getTotalComment()));
+        favoritesDto.setUserID(post.getUserId().getId());
+        favoritesDto.setCreateAt(post.getCreateAt());
+        return favoritesDto;
     }
 
     @Override
-    @Transactional
-    public void deleteFavorite(UUID favorites) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null ) {
-            throw new NotFoundException("Bạn cần đăng nhập để thực hiện hành động này!");
+    public void deleteFavorite(String posts) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            throw new UnauthorizedException("Bạn phải đăng nhập mới được thực hiện các hành động tiếp theo!");
         }
 
-        String currentUsername = auth.getName();
+        String currentUsername = authentication.getName();
         Users currentUser = usersRepository.findByUsername(currentUsername);
-        if (currentUser == null) {
-            throw new NotFoundException("Không tìm thấy người dùng!");
+        String currentUserId = currentUser.getId();
+
+        if (currentUserId == null) {
+            throw new NotFoundException("Không tìm thấy tài khoản người dùng.");
         }
 
-        Optional<Favorites> optionalFavorite = favoritesRepository.findById(favorites.toString());
-        if (optionalFavorite.isEmpty()){
-            throw new NotFoundException("không tìm thấy bài viết cần xóa !");
+        int count = postsRepository.countFavoritesByUserIdAndPostId(currentUserId, posts);
+        if (count == 0) {
+            throw new NotFoundException("Không tìm thấy mục yêu thích!");
         }
 
-        favoritesRepository.deleteByPostId(favorites.toString());
+        postsRepository.deleteFavoriteByUserIdAndPostId(currentUserId, posts);
     }
 }

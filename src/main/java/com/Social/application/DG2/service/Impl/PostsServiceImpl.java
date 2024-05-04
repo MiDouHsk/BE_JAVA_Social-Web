@@ -42,11 +42,9 @@ public class PostsServiceImpl implements PostsService{
     @Autowired
     private PostsMapper postsMapper;
     @Autowired
-    private MediaService mediaService;
-    @Autowired
     private CommentsRepository commentsRepository;
     @Autowired
-    private FavoritesRepository favoritesRepository;
+    private MediaService mediaService;
 
     @Override
     public Posts createPosts(PostsDto postDto) {
@@ -153,7 +151,6 @@ public class PostsServiceImpl implements PostsService{
             throw new AccessDeniedException("Bạn không có quyền Xóa bài đăng này");
         }
         commentsRepository.deleteByPostId(postId.toString());
-        favoritesRepository.deleteByPostId(postId.toString());
 
 //        xóa media trên minIO
         List<Medias> medias = post.getMedias();
@@ -165,13 +162,12 @@ public class PostsServiceImpl implements PostsService{
                 throw new RuntimeException(e);
             }
         }
-
 //        xóa media
         mediaRepository.deleteById(postId.toString());
 //        xóa comments
         commentsRepository.deleteByPostId(postId.toString());
-//        xóa favorites
-        favoritesRepository.deleteByPostId(postId.toString());
+
+//        favoritesService.deleteFavorite(postId.toString());
 //        xóa bài posts
         postsRepository.delete(post);
     }

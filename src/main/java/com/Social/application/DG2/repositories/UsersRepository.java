@@ -28,4 +28,7 @@ public interface UsersRepository extends JpaRepository<Users, String> {
 
     @Query("SELECT u FROM Users u WHERE u.id NOT IN (SELECT f.id FROM Users u JOIN u.followingUser f WHERE u.id = ?1)")
     Page<Users> findUnfollowerUsersByUserId(String userId, Pageable pageable);
+
+    @Query("SELECT COUNT(p) > 0 FROM Users u JOIN u.favoritesPost p WHERE u.id = :userId AND p.id = :postId")
+    boolean isPostFavoritedByUser(@Param("userId") String userId, @Param("postId") String postId);
 }

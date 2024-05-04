@@ -1,7 +1,6 @@
 package com.Social.application.DG2.controller;
 
 import com.Social.application.DG2.dto.FavoritesDto;
-import com.Social.application.DG2.entity.Favorites;
 import com.Social.application.DG2.service.FavoritesService;
 import com.Social.application.DG2.util.annotation.CheckLogin;
 import com.Social.application.DG2.util.exception.ConflictException;
@@ -24,12 +23,11 @@ public class FavoritesController {
 
     @Autowired
     private FavoritesService favoritesService;
-
     @CheckLogin
-    @PostMapping("/save")
-    public ResponseEntity<String> saveFavorite(@RequestParam String postsId) {
+    @PostMapping("/{postId}")
+    public ResponseEntity<String> saveFavorite(@RequestParam String postId) {
         try {
-            favoritesService.saveFavorite(postsId);
+            favoritesService.saveFavorite(postId);
             return ResponseEntity.ok("Lưu bài mình thích thành công!");
         } catch (UnauthorizedException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
@@ -45,10 +43,10 @@ public class FavoritesController {
     @CheckLogin
     @GetMapping("/get")
     public ResponseEntity<Page<FavoritesDto>> getFavoritesByToken(
-                                                            @RequestParam(defaultValue = "0") int page,
-                                                            @RequestParam(defaultValue = "10") int pageSize,
-                                                            @RequestParam(defaultValue = "createAt") String sortName,
-                                                            @RequestParam(defaultValue = "DESC") String sortType) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "createAt") String sortName,
+            @RequestParam(defaultValue = "DESC") String sortType) {
 
         // Tạo một biến Sort.Direction để lưu hướng sắp xếp
         Sort.Direction direction;
@@ -67,10 +65,12 @@ public class FavoritesController {
 
     @CheckLogin
     @DeleteMapping("/delete/{favoritesID}")
-    public void deleteFavorite(@RequestParam UUID favoritesID) {
+    public ResponseEntity<String> deleteFavorite(@RequestParam String posts) {
         try {
-            favoritesService.deleteFavorite(favoritesID);
+            favoritesService.deleteFavorite(posts);
+            return new ResponseEntity<>("Post deleted successfully", HttpStatus.OK);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new NotFoundException(e.getMessage());
         }
 
