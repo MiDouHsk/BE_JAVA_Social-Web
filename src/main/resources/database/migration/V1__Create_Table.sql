@@ -22,6 +22,7 @@ CREATE TABLE post (
                     status VARCHAR(100) NOT NULL ,
                     total_like INT NOT NULL ,
                     total_comment INT NOT NULL ,
+                    total_share INT NOT NULL ,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     created_by CHAR(36),
                     FOREIGN KEY (created_by) REFERENCES users(id));

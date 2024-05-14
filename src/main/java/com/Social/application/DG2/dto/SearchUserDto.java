@@ -18,6 +18,7 @@ public class SearchUserDto {
     private Timestamp dateOfBirth;
     private String address;
     private String avatar;
+    private String background;
     private Timestamp createAt;
 
 

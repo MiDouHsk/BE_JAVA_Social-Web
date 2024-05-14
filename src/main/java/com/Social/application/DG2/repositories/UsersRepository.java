@@ -31,4 +31,10 @@ public interface UsersRepository extends JpaRepository<Users, String> {
 
     @Query("SELECT COUNT(p) > 0 FROM Users u JOIN u.favoritesPost p WHERE u.id = :userId AND p.id = :postId")
     boolean isPostFavoritedByUser(@Param("userId") String userId, @Param("postId") String postId);
+
+    @Query("SELECT COUNT(u) FROM Users u JOIN u.followingUser fu WHERE fu.id = :userId")
+    int countByFollowingUsersId(String userId);
+
+    @Query("select u from Users u where u.mail = :email")
+    Users findByEmail(@Param("email") String email);
 }

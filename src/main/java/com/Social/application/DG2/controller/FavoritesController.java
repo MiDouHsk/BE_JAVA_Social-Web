@@ -1,6 +1,7 @@
 package com.Social.application.DG2.controller;
 
 import com.Social.application.DG2.dto.FavoritesDto;
+import com.Social.application.DG2.entity.Posts;
 import com.Social.application.DG2.service.FavoritesService;
 import com.Social.application.DG2.util.annotation.CheckLogin;
 import com.Social.application.DG2.util.exception.ConflictException;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/favorites")
 public class FavoritesController {
 
@@ -25,7 +27,7 @@ public class FavoritesController {
     private FavoritesService favoritesService;
     @CheckLogin
     @PostMapping("/{postId}")
-    public ResponseEntity<String> saveFavorite(@RequestParam String postId) {
+    public ResponseEntity<String> saveFavorite(@PathVariable String postId) {
         try {
             favoritesService.saveFavorite(postId);
             return ResponseEntity.ok("Lưu bài mình thích thành công!");
@@ -42,7 +44,7 @@ public class FavoritesController {
 
     @CheckLogin
     @GetMapping("/get")
-    public ResponseEntity<Page<FavoritesDto>> getFavoritesByToken(
+    public ResponseEntity<Page<Posts>> getFavoritesByToken(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(defaultValue = "createAt") String sortName,
@@ -59,18 +61,19 @@ public class FavoritesController {
         }
 
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by(direction, sortName));
-        Page<FavoritesDto> favoritesPage = favoritesService.getFavoritesByToken(pageable);
-        return ResponseEntity.ok(favoritesPage);
+        Page<Posts> favoritePostsPage = favoritesService.getFavoritesByToken(pageable);
+        return ResponseEntity.ok(favoritePostsPage);
     }
 
+
     @CheckLogin
-    @DeleteMapping("/delete/{favoritesID}")
-    public ResponseEntity<String> deleteFavorite(@RequestParam String posts) {
+    @DeleteMapping("/delete/{postId}")
+    public ResponseEntity<String> deleteFavorite(@PathVariable String postId) {
         try {
-            favoritesService.deleteFavorite(posts);
+            favoritesService.deleteFavorite(postId);
             return new ResponseEntity<>("Post deleted successfully", HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             throw new NotFoundException(e.getMessage());
         }
 

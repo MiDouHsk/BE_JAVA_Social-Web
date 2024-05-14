@@ -40,7 +40,6 @@ public class ReactionsServiceImpl implements ReactionsService {
         this.commentsRepository = commentsRepository;
     }
 
-    @Override
     public ResponseEntity<String> createReaction(ReactionsDto reactionDTO) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = auth.getName();
@@ -73,7 +72,7 @@ public class ReactionsServiceImpl implements ReactionsService {
             }
 
             Reactions reaction = new Reactions();
-            reaction.setReactionsId(UUID.randomUUID().toString());
+            reaction.setId(UUID.randomUUID().toString());
             reaction.setCreatedBy(currentUser);
 
             reaction.setObjectType(reactionDTO.getObjectType());
@@ -87,27 +86,29 @@ public class ReactionsServiceImpl implements ReactionsService {
 
 
     @Override
-    public void deleteReaction(String reactionId) {
+    public void deleteReaction(String postId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = auth.getName();
         Users currentUser = usersRepository.findByUsername(currentUsername);
 
         if (currentUser != null) {
-            Optional<Reactions> reactionOptional = reactionsRepository.findById(reactionId);
-            if (reactionOptional.isPresent()) {
-                Reactions reaction = reactionOptional.get();
-                if (reaction.getCreatedBy().equals(currentUser)) {
-                    reactionsRepository.delete(reaction);
-                } else {
-                    throw new IllegalArgumentException("Bạn không thể xóa reactions của người khác.");
-                }
+            // Xóa các phản ứng dựa trên postId và userId
+            reactionsRepository.deleteByObjectIdAndCreatedBy(postId, currentUser.getId());
+
+            // Giảm tổng số lượng like của bài viết đi 1
+            Optional<Posts> optionalPost = postsRepository.findById(postId);
+            if (optionalPost.isPresent()) {
+                Posts post = optionalPost.get();
+                post.setTotalLike(post.getTotalLike() - 1);
+                postsRepository.save(post);
             } else {
-                throw new IllegalArgumentException("Không tìm thấy ID reactions.");
+                throw new IllegalArgumentException("Không tìm thấy bài viết cho postId đã cho.");
             }
         } else {
             throw new IllegalStateException("Không thể xác định người dùng hiện tại.");
         }
     }
+
 
     @Override
     public void updateReaction(String reactionId, ReactionsDto updatedReactionDto) {

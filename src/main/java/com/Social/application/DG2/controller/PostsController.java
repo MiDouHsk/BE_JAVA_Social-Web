@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("/posts")
 public class PostsController {
     private final PostsService postsService;
@@ -67,7 +67,7 @@ public class PostsController {
     }
 
     @GetMapping("/userList/{userId}")
-    public ResponseEntity<List<Posts>> getPostsByUserId(@PathVariable("userId") UUID userId,
+    public ResponseEntity<Page<Posts>> getPostsByUserId(@PathVariable("userId") UUID userId,
                                                         @RequestParam(defaultValue = "0") int page,
                                                         @RequestParam(defaultValue = "10") int pageSize,
                                                         @RequestParam(defaultValue = "createAt") String sortName,
@@ -82,14 +82,14 @@ public class PostsController {
             }
             Pageable sortedByName = PageRequest.of(page, pageSize, Sort.by(direction, sortName));
             Page<Posts> posts = postsService.getPostsByUserId(sortedByName, userId);
-            return ResponseEntity.ok().body(posts.getContent());
+            return ResponseEntity.ok().body(posts);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @GetMapping("/allList")
-    public ResponseEntity<List<Posts>> getAllPosts(@RequestParam(defaultValue = "0") int page,
+    public ResponseEntity<Page<Posts>> getAllPosts(@RequestParam(defaultValue = "0") int page,
                                                    @RequestParam(defaultValue = "10") int pageSize,
                                                    @RequestParam(defaultValue = "createAt") String sortName,
                                                    @RequestParam(defaultValue = "DESC") String sortType
@@ -102,7 +102,7 @@ public class PostsController {
                 direction = Sort.Direction.DESC;
             }
             Pageable sortedByName = PageRequest.of(page, pageSize, Sort.by(direction, sortName));
-            List<Posts> posts = postsService.getAllPosts(sortedByName);
+            Page<Posts> posts = postsService.getAllPosts(sortedByName);
             return new ResponseEntity<>(posts, HttpStatus.OK);
         } catch ( Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -158,7 +158,7 @@ public class PostsController {
 
     @CheckLogin
     @GetMapping("/userList")
-    public ResponseEntity<List<Posts>> getListOfPostsByLoggedInUser(
+    public ResponseEntity<Page<Posts>> getListOfPostsByLoggedInUser(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(defaultValue = "createAt") String sortName,
@@ -173,7 +173,7 @@ public class PostsController {
             }
             Pageable sortedByName = PageRequest.of(page, pageSize, Sort.by(direction, sortName));
             Page<Posts> posts = postsService.getListOfPostsByLoggedInUser(sortedByName);
-            return ResponseEntity.ok().body(posts.getContent());
+            return ResponseEntity.ok().body(posts);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

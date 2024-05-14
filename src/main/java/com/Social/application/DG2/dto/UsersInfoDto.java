@@ -21,5 +21,6 @@ public class UsersInfoDto {
     private String mail;
     private String address;
     private String avatar;
+    private String background;
 
 }

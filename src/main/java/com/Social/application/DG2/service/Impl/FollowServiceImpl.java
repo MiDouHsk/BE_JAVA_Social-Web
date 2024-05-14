@@ -134,6 +134,33 @@ public class FollowServiceImpl implements FollowService {
         return filteredPage.map(this::usersInfoDto);
     }
 
+    @Override
+    public int countFollowingUsersById(String userId) {
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Người dùng không tồn tại"));
+        return user.getFollowingUser().size();
+    }
+
+
+    @Override
+    public int countFollowerUsersById(String userId) {
+        int followerCount = usersRepository.countByFollowingUsersId(userId);
+        return followerCount;
+    }
+
+    @Override
+    public Page<UsersInfoDto> getFollowingListUsersById(String userId, Pageable pageable) {
+        Page<Users> followingUsersPage = usersRepository.findFollowingUsersByUserId(userId, pageable);
+        return followingUsersPage.map(this::usersInfoDto);
+    }
+
+    @Override
+    public Page<UsersInfoDto> getFollowerListUsersById(String userId, Pageable pageable) {
+        Page<Users> followerUsersPage = usersRepository.findFollowerUsersByUserId(userId, pageable);
+        return followerUsersPage.map(this::usersInfoDto);
+    }
+
+
     private UsersInfoDto usersInfoDto(Users users) {
         UsersInfoDto dto = new UsersInfoDto();
         dto.setId(users.getId());

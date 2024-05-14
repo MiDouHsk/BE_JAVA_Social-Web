@@ -16,6 +16,7 @@ import java.util.List;
 
 
 @RestController
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("/reactions")
 public class ReactionsController {
 
@@ -39,12 +40,12 @@ public class ReactionsController {
     }
 
     @CheckLogin
-    @DeleteMapping("/{id}")
-        public ResponseEntity<String> deleteReaction(@PathVariable String id) {
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<String> deleteReaction(@PathVariable String postId) {
         try {
-            reactionsService.deleteReaction(id);
+            reactionsService.deleteReaction(postId);
             return ResponseEntity.ok("Hủy thành công reactions.");
-        }  catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

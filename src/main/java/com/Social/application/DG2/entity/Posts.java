@@ -41,8 +41,8 @@ public class Posts {
     @Column(name = "total_like")
     private int totalLike;
 
-    @Column(name = "total_comment")
-    private int totalComment;
+        @Column(name = "total_comment")
+        private int totalComment;
 
     @ManyToOne
     @JoinColumn(name = "created_by")
@@ -51,11 +51,15 @@ public class Posts {
     @Column(name = "created_at")
     private Timestamp createAt;
 
+    @Column(name = "total_share")
+    private int totalShare;
+
     @JsonManagedReference
     @OneToMany(mappedBy = "postsId", cascade = CascadeType.ALL, fetch = FetchType.EAGER )
     private List<Medias> medias;
 
-    @ManyToMany(mappedBy = "favoritesPost", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore 
+    @ManyToMany(mappedBy = "favoritesPost", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Users> favoritesUser;
 
     @Override

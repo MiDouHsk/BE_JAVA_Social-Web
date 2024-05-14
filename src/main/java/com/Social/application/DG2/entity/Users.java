@@ -52,6 +52,9 @@ public class Users {
     @Column
     private String address;
 
+    @Column
+    private String background;
+
     private String avatar;
 
     @Enumerated(EnumType.STRING)
@@ -83,6 +86,7 @@ public class Users {
     )
     private List<Users> followingUser = new ArrayList<>();
 
+    @JsonIgnore
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
             name = "favorites",

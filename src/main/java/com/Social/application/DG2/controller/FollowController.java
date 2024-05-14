@@ -17,7 +17,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("/follow")
 public class FollowController {
 
@@ -44,7 +44,7 @@ public class FollowController {
     }
     @CheckLogin
     @GetMapping("/ListUsers/following")
-    public ResponseEntity<List<UsersInfoDto>> getFollowingUsers(
+    public ResponseEntity<Page<UsersInfoDto>> getFollowingUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(defaultValue =  "createAt") String sortName,
@@ -62,14 +62,13 @@ public class FollowController {
 
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by(direction, sortName));
 
-        Page<UsersInfoDto> followingUsers =
-                followService.getFollowingListUsers(pageable);
-        return ResponseEntity.ok(followingUsers.getContent());
+        Page<UsersInfoDto> followerUsers = followService.getFollowingListUsers(pageable);
+        return ResponseEntity.ok(followerUsers);
     }
 
     @CheckLogin
     @GetMapping("/ListUsers/follower")
-    public ResponseEntity<List<UsersInfoDto>> getFollowerUsers(
+    public ResponseEntity<Page<UsersInfoDto>> getFollowerUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(defaultValue =  "createAt") String sortName,
@@ -87,9 +86,8 @@ public class FollowController {
 
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by(direction, sortName));
 
-        Page<UsersInfoDto> followerUsers =
-                followService.getFollowerListUsers(pageable);
-        return ResponseEntity.ok(followerUsers.getContent());
+        Page<UsersInfoDto> followerUsers = followService.getFollowerListUsers(pageable);
+        return ResponseEntity.ok(followerUsers);
     }
 
     @CheckLogin
@@ -116,6 +114,66 @@ public class FollowController {
                 followService.getNotFollowingListUsers(pageable);
         return ResponseEntity.ok(notFollowingUsers.getContent());
     }
+    @GetMapping("/followingCount/{userId}")
+    public int getFollowingCountByUserId(@PathVariable String userId) {
+        return followService.countFollowingUsersById(userId);
+    }
+
+    @GetMapping("/followerCount/{userId}")
+    public int getFollowerCountByUserId(@PathVariable String userId) {
+        return followService.countFollowerUsersById(userId);
+    }
+
+    @GetMapping("/ListUsers/follower/{userId}")
+    public ResponseEntity<List<UsersInfoDto>> getFollowerListUsersById(
+            @PathVariable String userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "createAt") String sortName,
+            @RequestParam(defaultValue = "DESC") String sortType) {
+
+        // Tạo một biến Sort.Direction để lưu hướng sắp xếp
+        Sort.Direction direction;
+
+        // Kiểm tra giá trị của sortType
+        if (sortType.equalsIgnoreCase("ASC")) {
+            direction = Sort.Direction.ASC;
+        } else {
+            direction = Sort.Direction.DESC;
+        }
+
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(direction, sortName));
+
+        Page<UsersInfoDto> followerUsers =
+                followService.getFollowerListUsersById(userId, pageable);
+        return ResponseEntity.ok(followerUsers.getContent());
+    }
+
+    @GetMapping("/ListUsers/following/{userId}")
+    public ResponseEntity<List<UsersInfoDto>> getFollowingListUsersById(
+            @PathVariable String userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "createAt") String sortName,
+            @RequestParam(defaultValue = "DESC") String sortType) {
+
+        // Tạo một biến Sort.Direction để lưu hướng sắp xếp
+        Sort.Direction direction;
+
+        // Kiểm tra giá trị của sortType
+        if (sortType.equalsIgnoreCase("ASC")) {
+            direction = Sort.Direction.ASC;
+        } else {
+            direction = Sort.Direction.DESC;
+        }
+
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(direction, sortName));
+
+        Page<UsersInfoDto> followerUsers =
+                followService.getFollowingListUsersById(userId, pageable);
+        return ResponseEntity.ok(followerUsers.getContent());
+    }
+
 
 
     @DeleteMapping("/user/unfollow/{followingUserId}")

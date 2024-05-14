@@ -21,6 +21,8 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    @Autowired
+    private final AuthenticationConfiguration authConfiguration;
     public SecurityConfig(AuthenticationConfiguration authConfiguration) {
         this.authConfiguration = authConfiguration;
     }
@@ -29,8 +31,6 @@ public class SecurityConfig {
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
-    @Autowired
-    private final AuthenticationConfiguration authConfiguration;
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter();
@@ -46,7 +46,8 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.csrf().disable()
+        return http
+                .csrf().disable()
                 .authorizeHttpRequests()
                 .requestMatchers("/**","/swagger-ui/**",
                         "/v3/api-docs/**",

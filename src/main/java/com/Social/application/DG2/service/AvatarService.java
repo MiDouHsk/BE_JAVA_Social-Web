@@ -9,4 +9,7 @@ import java.security.NoSuchAlgorithmException;
 public interface AvatarService {
     void uploadAvatar(MultipartFile filePath) throws Exception;
     void deleteAvatar(String objectName) throws IOException, InvalidKeyException, NoSuchAlgorithmException;
+
+    void uploadBackground(MultipartFile filePath) throws Exception;
+    void deleteBackground(String objectName) throws IOException, InvalidKeyException, NoSuchAlgorithmException;
 }

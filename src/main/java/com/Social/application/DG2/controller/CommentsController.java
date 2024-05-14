@@ -16,19 +16,21 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("/comments")
 public class CommentsController {
 
     @Autowired
     private CommentsService commentsService;
 
+    @CheckLogin
     @PostMapping("/create")
-    public Comments addComment(@RequestParam String postId, @RequestParam String content) {
-        CommentsDto comment = new CommentsDto();
-        comment.setPostId(postId);
-        comment.setContent(content);
+    public Comments addComment(@RequestBody CommentsDto commentsDto) {
+//        CommentsDto comment = new CommentsDto();
+//        comment.setPostId(postId);
+//        comment.setContent(content);
 
-        return commentsService.saveComment(comment);
+        return commentsService.saveComment(commentsDto);
     }
 
     @CheckLogin

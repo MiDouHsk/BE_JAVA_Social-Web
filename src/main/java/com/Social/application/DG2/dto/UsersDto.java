@@ -21,6 +21,7 @@ public class UsersDto {
     private boolean gender;
     private Timestamp dateOfBirth;
     private String avatar;
+    private String background;
 //    private boolean enable;
 //    private Timestamp createAt;
 //    private Timestamp updateAt;

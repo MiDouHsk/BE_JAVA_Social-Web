@@ -17,7 +17,7 @@ public interface PostsService {
     Page<Posts> getPostsByUserId(Pageable pageable, UUID userId);
     int getNumberOfPostsByUserId(UUID userId);
 
-    List<Posts> getAllPosts(Pageable pageable);
+    Page<Posts> getAllPosts(Pageable pageable);
     int getNumberOfPosts();
 
     Page<Posts> getListOfPostsByLoggedInUser(Pageable pageable);

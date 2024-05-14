@@ -99,7 +99,6 @@ public class MediaServiceImpl implements MediaService {
         try {
             String filepath = userId + "/" + objectName;
 
-            // Kiểm tra xem tệp tồn tại trên MinIO hay không
             minioClient.statObject(
                     StatObjectArgs.builder()
                             .bucket(bucketName)
@@ -107,7 +106,6 @@ public class MediaServiceImpl implements MediaService {
                             .build()
             );
 
-            // Nếu tệp tồn tại, thực hiện xóa
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(bucketName)

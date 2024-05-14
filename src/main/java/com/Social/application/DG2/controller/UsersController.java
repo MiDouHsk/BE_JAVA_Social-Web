@@ -37,7 +37,7 @@ import java.util.Map;
 
 @Controller
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("/user")
 public class UsersController {
     @Autowired
@@ -72,12 +72,7 @@ public class UsersController {
 
     @PostMapping("/auth/register")
     public ResponseEntity<?> addNewUser(@RequestBody UsersDto registerDTO) {
-        try {
-            registerService.addUser(registerDTO);
-            return ResponseEntity.ok("bạn đã tạo thành công tài khoản !");
-        }catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi khi tạo tai khoản: " + e.getMessage());
-        }
+        return registerService.addUser(registerDTO);
     }
 
     @GetMapping("/search")
@@ -136,6 +131,12 @@ public class UsersController {
         }
         UsersInfoDto usersInfoDto = modelMapper.map(users, UsersInfoDto.class);
         return ResponseEntity.ok(usersInfoDto);
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UsersInfoDto> getUserById(@PathVariable String userId) {
+        UsersInfoDto usersDto = userService.getUserById(userId);
+        return new ResponseEntity<>(usersDto, HttpStatus.OK);
     }
 
 }

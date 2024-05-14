@@ -8,11 +8,14 @@ import com.Social.application.DG2.mapper.PostsMapper;
 import com.Social.application.DG2.repositories.MediaRepository;
 import com.Social.application.DG2.repositories.PostsRepository;
 import com.Social.application.DG2.repositories.UsersRepository;
+import com.Social.application.DG2.service.FavoritesService;
 import com.Social.application.DG2.service.MediaService;
 import com.Social.application.DG2.repositories.*;
 import com.Social.application.DG2.service.PostsService;
+import com.Social.application.DG2.service.SharesPostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -45,6 +48,10 @@ public class PostsServiceImpl implements PostsService{
     private CommentsRepository commentsRepository;
     @Autowired
     private MediaService mediaService;
+    @Autowired
+    private SharesPostsRepository sharesPostsRepository;
+    @Autowired
+    private FavoritesService favoritesService;
 
     @Override
     public Posts createPosts(PostsDto postDto) {
@@ -150,24 +157,26 @@ public class PostsServiceImpl implements PostsService{
         if (!post.getUserId().getId().equals(currentUser.getId())) {
             throw new AccessDeniedException("Bạn không có quyền Xóa bài đăng này");
         }
-        commentsRepository.deleteByPostId(postId.toString());
 
 //        xóa media trên minIO
-        List<Medias> medias = post.getMedias();
-        for (Medias media : medias) {
-            try {
-                String objectName = media.getBaseName();
-                mediaService.deletePost(objectName);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
+//        List<Medias> medias = post.getMedias();
+//        for (Medias media : medias) {
+//            try {
+//                String objectName = media.getBaseName();
+//                mediaService.deletePost(objectName);
+//            } catch (Exception e) {
+//                // Nếu không tìm thấy tập tin trên MinIO, tiếp tục quá trình xóa bài đăng
+//                System.out.println("Không tìm thấy tập tin trên MinIO. Tiếp tục quá trình xóa bài đăng...");
+//            }
+//        }
 //        xóa media
         mediaRepository.deleteById(postId.toString());
 //        xóa comments
         commentsRepository.deleteByPostId(postId.toString());
-
-//        favoritesService.deleteFavorite(postId.toString());
+        // xóa favorites
+//        favoritesService.deleteFavoriteAll(post.getId());
+        // xóa share
+        sharesPostsRepository.deleteById(postId.toString());
 //        xóa bài posts
         postsRepository.delete(post);
     }
@@ -196,8 +205,8 @@ public class PostsServiceImpl implements PostsService{
     }
 
     @Override
-    public List<Posts> getAllPosts(Pageable pageable) {
-        return postsRepository.findAll();
+    public Page<Posts> getAllPosts(Pageable pageable) {
+        return postsRepository.findAll(pageable);
     }
 
     @Override

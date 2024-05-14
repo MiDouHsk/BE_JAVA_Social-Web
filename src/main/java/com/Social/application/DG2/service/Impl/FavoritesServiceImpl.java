@@ -53,18 +53,19 @@ public class FavoritesServiceImpl implements FavoritesService {
         usersRepository.save(user);
     }
 
-    @Override
-    public Page<FavoritesDto> getFavoritesByToken(Pageable pageable) {
+    public Page<Posts> getFavoritesByToken(Pageable pageable) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = authentication.getName();
 
         Users currentUser = usersRepository.findByUsername(currentUsername);
         String currentUserId = currentUser.getId();
 
-        Page<Posts> favoritePostsPage = postsRepository.findFavoritesByUserId(currentUserId, pageable);
+        // Lấy danh sách ID của các bài đăng mà người dùng đã yêu thích
+        Page<Posts> favoritePostIds = postsRepository.findFavoritesByUserId(currentUserId, pageable);
 
-        return favoritePostsPage.map(this::convertToDto);
+        return favoritePostIds;
     }
+
 
     private FavoritesDto convertToDto(Posts post) {
         FavoritesDto favoritesDto = new FavoritesDto();
@@ -100,6 +101,22 @@ public class FavoritesServiceImpl implements FavoritesService {
         int count = postsRepository.countFavoritesByUserIdAndPostId(currentUserId, posts);
         if (count == 0) {
             throw new NotFoundException("Không tìm thấy mục yêu thích!");
+        }
+
+        postsRepository.deleteFavoriteByUserIdAndPostId(currentUserId, posts);
+    }
+    public void deleteFavoriteAll(String posts) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            throw new UnauthorizedException("Bạn phải đăng nhập mới được thực hiện các hành động tiếp theo!");
+        }
+
+        String currentUsername = authentication.getName();
+        Users currentUser = usersRepository.findByUsername(currentUsername);
+        String currentUserId = currentUser.getId();
+
+        if (currentUserId == null) {
+            throw new NotFoundException("Không tìm thấy tài khoản người dùng.");
         }
 
         postsRepository.deleteFavoriteByUserIdAndPostId(currentUserId, posts);

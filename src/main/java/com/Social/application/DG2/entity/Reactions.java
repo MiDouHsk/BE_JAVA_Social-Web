@@ -9,7 +9,7 @@ import lombok.Data;
 public class Reactions {
     @Id
     @Column(name = "id", columnDefinition = "CHAR(36)")
-    private String reactionsId;
+    private String id;
 
     @Column(name = "object_type")
     private String objectType;

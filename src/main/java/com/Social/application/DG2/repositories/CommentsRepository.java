@@ -15,12 +15,7 @@ import java.util.UUID;
 
 @Repository
 public interface CommentsRepository extends JpaRepository<Comments, String> {
-    @Query("SELECT CONCAT(c.createBy.firstName, ' ', c.createBy.lastName)" +
-            ", c.content, c.createBy.id" +
-            ", c.createBy.avatar" +
-            ", c.createAt" +
-            ", c.totalLike" +
-            " FROM Comments c WHERE c.postId.id = :postId ORDER BY c.createAt DESC")
+    @Query("SELECT c FROM Comments c WHERE c.postId.id = :postId ORDER BY c.createAt DESC")
     Page<Comments> findByPostId(@Param("postId") String postId, Pageable pageable);
 
     @Transactional

@@ -14,20 +14,20 @@ import java.security.NoSuchAlgorithmException;
 
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*")
-@RequestMapping("/avatar")
-public class AvatarController {
+@RequestMapping("/background")
+public class BackgroundController {
 
     private final AvatarService avatarService;
 
-    public AvatarController(AvatarService avatarService) {
+    public BackgroundController(AvatarService avatarService) {
         this.avatarService = avatarService;
     }
 
     @CheckLogin
     @PostMapping(value = "/upload", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> uploadBackground(@RequestParam("file") MultipartFile file) {
         try {
-            avatarService.uploadAvatar(file);
+            avatarService.uploadBackground(file);
             return ResponseEntity.ok("File uploaded successfully!");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload file: " + e.getMessage());
@@ -35,9 +35,9 @@ public class AvatarController {
     }
     @CheckLogin
     @DeleteMapping("/delete")
-    public ResponseEntity<String> deleteAvt(@RequestParam("objectName") String objectName) {
+    public ResponseEntity<String> deleteBackground(@RequestParam("objectName") String objectName) {
         try {
-            avatarService.deleteAvatar(objectName);
+            avatarService.deleteBackground(objectName);
             return ResponseEntity.ok("File deleted successfully!");
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete file!");

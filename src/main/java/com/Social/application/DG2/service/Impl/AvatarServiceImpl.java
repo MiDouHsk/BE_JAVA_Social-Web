@@ -26,6 +26,7 @@ public class AvatarServiceImpl implements AvatarService {
     private final UsersRepository usersRepository;
     private final MinIOConfig minIOConfig;
     String bucketName = "avatar";
+    String bucketName2 = "background";
 
     public AvatarServiceImpl(MinioClient minioClient, UsersRepository usersRepository, MinIOConfig minIOConfig) {
         this.minioClient = minioClient;
@@ -94,6 +95,70 @@ public class AvatarServiceImpl implements AvatarService {
             throw new NotFoundException("Không tìm thấy tệp đính kèm từ MinIO: " + e.getMessage());
         }
     }
+
+    @Override
+    public void uploadBackground(MultipartFile file) throws Exception {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = auth.getName();
+        Users currentUser = usersRepository.findByUsername(currentUsername);
+
+        String userId = currentUser.getId();
+
+        try{
+            // Kiểm tra bucketName
+            checkBucketName2(minioClient);
+
+            try (InputStream inputStream = new BufferedInputStream(file.getInputStream())) {
+                String objectName = userId + "/" + file.getOriginalFilename();
+                minioClient.putObject(
+                        PutObjectArgs.builder()
+                                .bucket(bucketName2)
+                                .object(objectName)
+                                .stream(inputStream, inputStream.available(), -1)
+                                .contentType(getContentType(objectName))
+                                .build()
+
+                );
+                String avatarUrl = bucketName2 + "/" + objectName;
+                currentUser.setBackground(avatarUrl);
+                usersRepository.save(currentUser);
+            }
+        } catch (Exception e) {
+            throw new Exception("Lỗi khi tải tệp lên MinIO", e);
+        }
+    }
+
+    @Override
+    public void deleteBackground(String objectName) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = auth.getName();
+        Users currentUser = usersRepository.findByUsername(currentUsername);
+
+        String userId = currentUser.getId();
+
+        try {
+            String filepath = userId + "/" + objectName;
+            // Kiểm tra xem tệp tồn tại trên MinIO hay không
+            minioClient.statObject(
+                    StatObjectArgs.builder()
+                            .bucket(bucketName2)
+                            .object(filepath)
+                            .build()
+            );
+            // Xóa tập tin từ MinIO
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(bucketName2)
+                            .object(filepath)
+                            .build()
+            );
+            currentUser.setBackground(null);
+            usersRepository.save(currentUser);
+        } catch (MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
+            throw new NotFoundException("Không tìm thấy tệp đính kèm từ MinIO: " + e.getMessage());
+        }
+    }
+
     private String getContentType(String fileName) {
         String fileExtension = getFileExtension(fileName).toLowerCase();
         return switch (fileExtension) {
@@ -124,6 +189,24 @@ public class AvatarServiceImpl implements AvatarService {
             minioClient.makeBucket(makeBucketArgs);
 
             System.out.println(bucketName + " created.");
+        }
+    }
+    public void checkBucketName2(MinioClient minioClient) throws Exception {
+
+        BucketExistsArgs bucketExistsArgs = BucketExistsArgs.builder()
+                .bucket(bucketName2)
+                .build();
+
+        if (minioClient.bucketExists(bucketExistsArgs)) {
+            System.out.println(bucketName2 + " exists.");
+        } else {
+            MakeBucketArgs makeBucketArgs = MakeBucketArgs.builder()
+                    .bucket(bucketName2)
+                    .build();
+
+            minioClient.makeBucket(makeBucketArgs);
+
+            System.out.println(bucketName2 + " created.");
         }
     }
 }
